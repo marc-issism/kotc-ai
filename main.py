@@ -5,8 +5,7 @@ from ScreenshotReader import screenshot_to_string
 import keyboard as Keyboard
 import threading as Threads
 import time as Time
-from DiscordBot import *
-import asyncio
+from Webhooks import send_to_server
 
 # ctrl+shift+p to open up venv
 # https://docs.mistral.ai/getting-started/quickstart/
@@ -26,24 +25,21 @@ CONSTANTS = {
     "SCREENSHOT_HOTKEY": "ctrl + shift + a",
     "WINDOW_TITLE": "King of the Castle",
     "ESCAPE_HOTKEY": "esc",
-    "DISCORD_TOKEN": "MTI3NzQ0NTUyMzgyMDc3NzUxMw.G0nB20.RZ_ORQYTzMx4SGqnyF3grfX4J5wSGJxTeXGJzY",
-    "CHANNEL": 709408355181002847
+    "WEBHOOK_URL": "https://discord.com/api/webhooks/1277492030620041218/I2FwK1MeY6zXPYMSdQBxZtgnVBAmpdiC-p4w3uR0na2_Ny8kw6J-SU-sYjg1QHZJr7G1"
 }
 
 def global_hotkeys():
     print("Thread 1 running")
     Keyboard.add_hotkey(CONSTANTS["SCREENSHOT_HOTKEY"], magic)
     Keyboard.wait(CONSTANTS["ESCAPE_HOTKEY"]) 
-
-def boxes():
-    Dialogue("Test Dialogue", "HELLO")
     
-def screenshot_to_ai(file_name: str) -> None:
+def screenshot_to_ai(file_name: str) -> str:
     input = screenshot_to_string(CONSTANTS["TESSERACT_PATH"], file_name)
     prefix = "Convert the following into something Lin Manuel Miranda would write in Hamilton in one stanza: "
     response = get_ai_response(prefix + input)
     print(response)
-    Dialogue("Mistral Response", response)
+    #Dialogue("Mistral Response", response)
+    return response
 
 def full_dialogue_listener():
     prev_len = 0
@@ -81,8 +77,8 @@ def magic():
         CONSTANTS["RIGHT"],
         CONSTANTS["BOTTOM"],
         "screenshot.png")
-    screenshot_to_ai("screenshot.png")
-    asyncio(send_msg(CONSTANTS["CHANNEL"], "HELLO"))
+    response = screenshot_to_ai("screenshot.png")
+    send_to_server(CONSTANTS["WEBHOOK_URL"], response)
 
 def isValidDialogue(current_content, next_content, prev_len) -> bool:
     curr_len = len(current_content)
@@ -99,21 +95,12 @@ def isValidDialogue(current_content, next_content, prev_len) -> bool:
     return True
     
 
-def discord():
-    print("Thread 3 running")
-    run_bot()
-    asyncio.run(send_msg(CONSTANTS["CHANNEL"], "THIS IS THREAD 2"))
-
 if __name__ == "__main__":
 
     thread1 = Threads.Thread(target=global_hotkeys)
     thread1.start()
-    thread3 = Threads.Thread(target=discord)
-    thread3.start()
-
-
     thread1.join()
-    thread3.join()
-    
+
+  
     
         
